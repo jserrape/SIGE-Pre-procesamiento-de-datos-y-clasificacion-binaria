@@ -54,5 +54,6 @@ plot(v)
 datos_entrenamiento <- sample_frac(datos, .7)
 datos_prueba <- setdiff(datos, datos_entrenamiento)
 
+write_csv(datos, 'datos_pre_proc.csv')
 write_csv(datos_entrenamiento, 'datos_entrenamiento.csv')
 write_csv(datos_prueba, 'datos_prueba.csv')

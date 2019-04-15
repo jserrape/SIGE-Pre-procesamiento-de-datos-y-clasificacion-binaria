@@ -7,13 +7,13 @@ library(funModeling)
 #Cambio el directorio de trabajo
 setwd("C:/Users/juanca/Desktop/SIGE")
 options(max.print=999999)
-set.seed(1)
+set.seed(1234)
 
 #Cargo el conjunto de datos
 datos <- read_csv('train.csv', na = c('NA', 'n/a', '', ' '))
 
 #Reduzco el conjunto a la mitad por limitaciones del equipo
-reducido <- sample_frac(datos, .1)
+reducido <- sample_frac(datos, .5)
 write_csv(reducido, 'reducido.csv')
 datos <- reducido
 
