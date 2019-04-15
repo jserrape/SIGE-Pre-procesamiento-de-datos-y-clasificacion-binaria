@@ -3,6 +3,7 @@
 
 library(tidyverse)
 library(funModeling)
+library(ROSE)
 
 #Cambio el directorio de trabajo
 setwd("C:/Users/juanca/Desktop/SIGE")
@@ -12,10 +13,13 @@ set.seed(1234)
 #Cargo el conjunto de datos
 datos <- read_csv('train.csv', na = c('NA', 'n/a', '', ' '))
 
+#Balanceo los datos
+table(datos$target)
+datos <- ovun.sample(target ~., data=datos, p=0.5, seed=1, method="over")$data
+table(datos$target)
+
 #Reduzco el conjunto a la mitad por limitaciones del equipo
-reducido <- sample_frac(datos, .5)
-write_csv(reducido, 'reducido.csv')
-datos <- reducido
+write_csv(datos, 'balanceado.csv')
 
 #Obtengo estadisticas como el numero de ceros o de N/A
 status <- df_status(datos)
