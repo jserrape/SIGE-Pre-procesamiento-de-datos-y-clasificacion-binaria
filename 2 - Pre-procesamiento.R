@@ -49,10 +49,22 @@ plot(v)
 
 
 ## ---------------------------------------------------------------
-## Gestion de ruido
+## Gestion de ruido (No tengo PC para esto.....)
 
-library(NoiseFiltersR)
+#library(caret)
+#library(NoiseFiltersR)
 
+#datos <- datos %>% 
+#  mutate(target = as.factor(target)) %>%
+#  mutate(var_81 = as.factor(var_81))   %>%
+#  mutate(var_6 = as.factor(var_6))      %>%
+#  mutate(var_166 = as.factor(var_166))      %>%
+#  select(var_81, target, var_6, var_166)
+
+#noise_filter <- AENN(target ~., datos)
+
+#summary(noise_filter)
+#identical(noise_filter$cleanData, datos[setdiff(1:nrow(datos), noise_filter$remIdx), ])
 
 ## ---------------------------------------------------------------
 ## Guardo los datos pre-procesados
