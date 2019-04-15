@@ -15,7 +15,7 @@ datos <- read_csv('train.csv', na = c('NA', 'n/a', '', ' '))
 
 #Balanceo los datos
 table(datos$target)
-datos <- ovun.sample(target ~., data=datos, p=0.5, seed=1, method="over")$data
+datos <- ovun.sample(target ~., data=datos, p=0.5, seed=1, method="under")$data
 table(datos$target)
 
 #Reduzco el conjunto a la mitad por limitaciones del equipo
