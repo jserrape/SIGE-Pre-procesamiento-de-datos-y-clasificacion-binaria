@@ -11,6 +11,9 @@ library(partykit)
 library(rattle)
 library(pROC)
 library(mice)
+library(lubridate)
+
+h1 <- now()
 
 #Cambio el directorio de trabajo
 setwd("C:/Users/juanca/Desktop/SIGE")
@@ -59,10 +62,18 @@ cm_train
 
 
 
+
 # Entrenamiento utilizando otra técnica
 rfModel <- train(target ~ ., data = train, method = "rf", metric = "ROC", trControl = rpartCtrl)
+
+# Visualización del modelo
+rpartModel_party <- as.party(rfModel$finalModel)
+plot(rpartModel_party)
 
 # Cálculo de error
 prediction <- predict(rfModel, val, type = "raw") 
 cm_train <- confusionMatrix(prediction, val[["target"]])
 cm_train
+
+h2 <- now()
+h2 - h1
