@@ -4,73 +4,16 @@
 library(tidyverse)
 library(funModeling)
 library(rpart)
-library(rattle)
-library(randomForest)
 library(caret)
 library(partykit)
 library(rattle)
-library(pROC)
 library(mice)
 library(lubridate)
+
+library(pROC)
 library(MLmetrics)
-
-
-
-## -------------------------------------------------------------------------------------
-## -------------------------------------------------------------------------------------
-## Funciones ##
-
-my_roc <-
-  function(data,
-           predictionProb,
-           target_var,
-           positive_class) {
-    auc <-
-      roc(data[[target_var]], predictionProb[[positive_class]], levels = unique(data[[target_var]]))
-    roc <-
-      plot.roc(
-        auc,
-        ylim = c(0, 1),
-        type = "S" ,
-        print.thres = T,
-        main = paste('AUC:', round(auc$auc[[1]], 2))
-      )
-    return(list("auc" = auc, "roc" = roc))
-  }
-
-
-trainRF <-
-  function(train_data,
-           rfCtrl = NULL,
-           rfParametersGrid = NULL) {
-    if (is.null(rfCtrl)) {
-      rfCtrl <- trainControl(
-        verboseIter = F,
-        classProbs = TRUE,
-        method = "repeatedcv",
-        number = 10,
-        repeats = 1,
-        summaryFunction = twoClassSummary
-      )
-    }
-    if (is.null(rfParametersGrid)) {
-      rfParametersGrid <- expand.grid(.mtry = c(sqrt(ncol(train))))
-    }
-    
-    rfModel <- train(
-      target ~ .,
-      data = train_data,
-      method = "rf",
-      metric = "ROC",
-      trControl = rfCtrl,
-      tuneGrid = rfParametersGrid
-    )
-    
-    return(rfModel)
-  }
-## -------------------------------------------------------------------------------------
-## -------------------------------------------------------------------------------------
-
+library(rattle)
+library(randomForest)
 
 
 #Cambio el directorio de trabajo
@@ -78,19 +21,11 @@ setwd("C:/Users/juanca/Desktop/SIGE")
 options(max.print = 999999)
 set.seed(0)
 
-#Cargo los conjuntos de datos de entrenamiento y test
-#train <- read_csv('datos_entrenamiento.csv', na = c('NA', 'n/a', '', ' '))
-#test <- read_csv('datos_prueba.csv', na = c('NA', 'n/a', '', ' '))
-
 datos <-
   read_csv('datos_pre_proc.csv', na = c('NA', 'n/a', '', ' '))
 
 #Reduzco el tamaño para hacer pruebas
-datos <-
-  datos[createDataPartition(datos$target,
-                            p = .3,
-                            list = FALSE,
-                            times = 1), ]
+#datos <- datos[createDataPartition(datos$target, p = .3, list = FALSE, times = 1), ]
 
 # Datos con imputacion de valores perdidos
 data_preproc <-
@@ -141,11 +76,11 @@ val   <- datos[-trainIndex, ]
 
 
 ## ---------------------------------------------------------------
-## Accuracy : 0.5883  Tiempo: 15.7612 secs
+## Accuracy : 0.5883  Tiempo: 11.83264 secs
 
 h1 <- now()
 
-# Entrenamiento del modelo
+# Entrenamiento del modelo rpart
 rpartModel <-
   train(
     target ~ .,
@@ -164,16 +99,17 @@ plot(rpartModel_party)
 prediction <- predict(rpartModel, val, type = "raw")
 cm_train <- confusionMatrix(prediction, val[["target"]])
 cm_train
+
 h2 <- now()
 h2 - h1
 
 
 ## ---------------------------------------------------------------
-## Accuracy : Accuracy : 0.647   Tiempo: 11.25393 mins
+## Accuracy : Accuracy : 0.6632   Tiempo: 43.11453 mins 
 
 h1 <- now()
 
-# Entrenamiento utilizando otra técnica
+# Entrenamiento del modelo rf
 rfModel <-
   train(
     target ~ .,
@@ -195,44 +131,12 @@ h2 <- now()
 h2 - h1
 
 
-
-
-## https://github.com/jgromero/sige2019/blob/master/pr%C3%A1cticas/03.%20An%C3%A1lisis%20predictivo/loans-unbalanced.R linea 82
 ## ---------------------------------------------------------------
-## Accuracy : 0.6460302  Tiempo: 5.4646 mins
+## Accuracy : Accuracy : 0.6969  Time difference of 1.024036 hours
 
 h1 <- now()
 
-rfModel <- trainRF(train)
-saveRDS(rfModel, file = "model1.rds")
-rfModel <- readRDS("model1.rds")
-orig_fit <- rfModel
-print(rfModel)
-
-prediction_p <- predict(rfModel, val, type = "prob")
-prediction_r <- predict(rfModel, val, type = "raw")
-result <- my_roc(val, prediction_p, "target", "Yes")
-
-plotdata <- val %>%
-  select(target) %>%
-  bind_cols(prediction_p) %>%
-  bind_cols(Prediction = prediction_r)
-table(plotdata$target, plotdata$Prediction)  # columnas son predicciones
-
-ggplot(plotdata) +
-  geom_bar(aes(x = target, fill = Prediction), position = position_fill())
-
-
-h2 <- now()
-h2 - h1
-
-
-## ---------------------------------------------------------------
-## Accuracy : Accuracy : 0.696  Time difference of 1.024036 hours
-## Crear modelo de predicción usando SVM
-
-h1 <- now()
-
+# Entrenamiento del modelo svm
 svmCtrl <-
   trainControl(
     verboseIter = F,
@@ -243,6 +147,7 @@ svmCtrl <-
     summaryFunction = twoClassSummary
   )
 
+# Visualización del modelo
 svmModel <-
   train(
     target ~ .,
